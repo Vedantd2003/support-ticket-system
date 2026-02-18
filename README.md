@@ -1,142 +1,120 @@
-# ⚡ SupportOS — AI-Powered Support Ticket System
+# SupportOS - AI-Powered Support Ticket System
 
-A full-stack support ticket system built with **Node.js + Express**, **React**, **PostgreSQL**, **Three.js**, **GSAP animations**, and **Google Gemini AI** for automatic ticket classification.
+SupportOS is a full-stack support ticket platform with:
+- React frontend with animated UI (Three.js + GSAP)
+- Node.js/Express backend
+- PostgreSQL database
+- Optional Google Gemini-based ticket classification
 
----
+## Features
+- User authentication (register/login/JWT)
+- Create, list, filter, update, and delete support tickets
+- Dashboard stats for ticket volume, status, priority, and category
+- AI ticket classification endpoint (`/api/tickets/classify`)
+- Dockerized local setup with one command
 
-## 🚀 Quick Start
+## Tech Stack
+- Frontend: React 18, Axios, GSAP, Three.js
+- Backend: Node.js 20, Express 4, Sequelize 6
+- Database: PostgreSQL 16
+- AI: Google Gemini (`@google/generative-ai`)
+- Infra: Docker, Docker Compose
 
-### 1. Prerequisites
-- Docker & Docker Compose installed
-- A Gemini API key → [Get one here](https://aistudio.google.com/app/apikey)
-
-### 2. Set your API key
-Edit the `.env` file in the project root:
-```bash
-GEMINI_API_KEY=your_actual_gemini_api_key_here
-```
-
-### 3. Launch everything
-```bash
-docker-compose up --build
-```
-
-That's it! The app will be available at:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000/api
-- **Health check**: http://localhost:5000/health
-
----
-
-## 🏗️ Tech Stack
-
-| Layer | Tech |
-|---|---|
-| Backend | Node.js 20, Express 4, ES6 Modules |
-| ORM | Sequelize 6 + PostgreSQL 16 |
-| Frontend | React 18, ES6 Modules |
-| Animation | GSAP 3 |
-| 3D Background | Three.js |
-| AI / LLM | Google Gemini 1.5 Flash |
-| Auth | JWT (jsonwebtoken + bcryptjs) |
-| Infrastructure | Docker + Docker Compose |
-
----
-
-## 🤖 LLM Integration — Why Gemini?
-
-**Google Gemini 1.5 Flash** was chosen because:
-- Fast response times (essential for real-time classification as user types)
-- Free tier available with generous limits
-- Reliable JSON output with proper prompting
-- `@google/generative-ai` SDK is simple and well-maintained
-
-**Prompt strategy**: The prompt instructs the model to return **only** a JSON object — no markdown, no preamble. This makes parsing reliable. The response is validated against allowed enum values before being used, so garbage output falls back to defaults gracefully.
-
-**Graceful degradation**: If the API key is missing or the LLM call fails for any reason, the endpoint returns `{ llm_available: false }` and ticket submission still works normally with defaults.
-
----
-
-## 📁 Project Structure
-
-```
+## Project Structure
+```text
 support-ticket-system/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── database.js         # Sequelize + PostgreSQL config
-│   │   ├── controllers/
-│   │   │   ├── authController.js   # Register, login, /me
-│   │   │   └── ticketController.js # CRUD + classify + stats
-│   │   ├── middleware/
-│   │   │   ├── auth.js             # JWT protect/optional/admin
-│   │   │   └── errorHandler.js     # Global error handler
-│   │   ├── models/
-│   │   │   ├── User.js             # User model with bcrypt hooks
-│   │   │   └── Ticket.js           # Ticket model with enums
-│   │   ├── routes/
-│   │   │   ├── auth.js             # /api/auth/*
-│   │   │   └── tickets.js          # /api/tickets/*
-│   │   ├── utils/
-│   │   │   └── gemini.js           # LLM classification utility
-│   │   └── server.js               # App entry point
-│   ├── Dockerfile
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── TicketForm.js       # New ticket form with LLM
-│   │   │   ├── TicketList.js       # Filterable ticket list
-│   │   │   └── StatsDashboard.js   # Stats + breakdown bars
-│   │   ├── hooks/
-│   │   │   └── useAuth.js          # Auth context + hook
-│   │   ├── pages/
-│   │   │   ├── AuthPage.js         # Login/register page
-│   │   │   └── DashboardPage.js    # Main dashboard
-│   │   ├── three/
-│   │   │   └── ThreeBackground.js  # Animated 3D background
-│   │   ├── utils/
-│   │   │   └── api.js              # Axios API client
-│   │   ├── App.js
-│   │   ├── index.js
-│   │   └── index.css
-│   ├── public/
-│   │   └── index.html
-│   ├── Dockerfile
-│   └── package.json
-│
-├── docker-compose.yml
-├── .env                            # ← set your GEMINI_API_KEY here
-└── README.md
+|-- backend/
+|   |-- src/
+|   |   |-- config/
+|   |   |-- controllers/
+|   |   |-- middleware/
+|   |   |-- models/
+|   |   |-- routes/
+|   |   |-- tests/
+|   |   `-- utils/
+|   |-- Dockerfile
+|   `-- package.json
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- hooks/
+|   |   |-- pages/
+|   |   |-- three/
+|   |   `-- utils/
+|   |-- Dockerfile
+|   `-- package.json
+|-- docker-compose.yml
+`-- README.md
 ```
 
----
+## API Endpoints
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me` (JWT required)
+- `GET /api/tickets`
+- `POST /api/tickets`
+- `PATCH /api/tickets/:id`
+- `DELETE /api/tickets/:id` (JWT required)
+- `POST /api/tickets/classify`
+- `GET /api/tickets/stats`
 
-## 🔌 API Endpoints
+Ticket list filters:
+- `category`
+- `priority`
+- `status`
+- `search`
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | — | Register new user |
-| POST | `/api/auth/login` | — | Login, get JWT |
-| GET | `/api/auth/me` | 🔒 JWT | Get current user |
-| GET | `/api/tickets` | — | List tickets (filterable) |
-| POST | `/api/tickets` | Optional | Create ticket |
-| PATCH | `/api/tickets/:id` | Optional | Update ticket |
-| DELETE | `/api/tickets/:id` | 🔒 JWT | Delete ticket |
-| POST | `/api/tickets/classify` | — | AI classification |
-| GET | `/api/tickets/stats` | — | Aggregated stats |
+## Run with Docker (Recommended)
+1. Create/update root `.env`:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+JWT_SECRET=your_jwt_secret_here
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=support_tickets
+DB_USER=postgres
+DB_PASSWORD=postgres123
+```
 
-**Query params for GET /api/tickets**: `?category=`, `?priority=`, `?status=`, `?search=`
+2. Start services:
+```bash
+docker compose up --build
+```
 
----
+3. Open:
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:5000/api`
+- Health: `http://localhost:5000/health`
 
-## 🎨 Design Decisions
+## Run without Docker
+Backend:
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-- **MVC architecture**: Controllers, models, routes, and middleware are fully separated for maintainability.
-- **ES6 modules**: All files use `import/export` (no CommonJS `require`). Both `package.json` files have `"type": "module"`.
-- **DB-level aggregation**: The `/stats` endpoint uses Sequelize `fn('COUNT', ...)` and `group()` — no Python/JS-level loops over all rows.
-- **Three.js background**: Animated particle field + wireframe torus gives the app a futuristic feel without impacting performance (uses `requestAnimationFrame` + proper cleanup).
-- **GSAP animations**: Page transitions, card reveals, form shakes on error, badge pop-ins on AI suggestion.
-- **Graceful auth**: Tickets can be submitted by guests (no JWT required). If a token exists, it's attached and the author is recorded.
-- **Retry logic**: Backend retries DB connection up to 10 times with 3s delay — essential for Docker startup ordering.
+Frontend:
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Environment Notes
+- Backend env template: `backend/.env.example`
+- Frontend env template: `frontend/.env.example`
+- Root `.env` is used by Docker Compose
+
+## Testing
+Backend tests:
+```bash
+cd backend
+npm test
+```
+
+## Production/Security Notes
+- Never commit real API keys or secrets.
+- Replace default JWT secret before deployment.
+- Restrict CORS to trusted origins in production.
